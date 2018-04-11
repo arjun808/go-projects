@@ -6,8 +6,8 @@ import (
   "io/ioutil"
   "strings"
   b64 "encoding/base64"
+  "strconv"
 )
-
 
 func kv_get(AppVersion string) (string) {
 var response string
@@ -36,40 +36,14 @@ if err != nil {
 	 return response
 }
 
-func kv_put(Nodename string, AppVersion string) (string) {
-  var response string
-  body := strings.NewReader(Nodename)
-  req, req_err := http.NewRequest("PUT", "http://172.31.4.66:8500/v1/kv/"+AppVersion, body)
-  if req_err != nil {
-	response = "Request error"
-    }else {
-    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-    resp, resp_err := http.DefaultClient.Do(req)
-    if resp_err != nil {
-	 response = "Response error"
-    }else {
-	   response = "true"
-	   
-}
-defer resp.Body.Close()
-}
-  return response
-}
-
-
 func main() {
-Nodename := "App1"
 AppV := "1.0"
 data := kv_get(AppV)
-
-NewNodename := data + "," + Nodename
-
-bool := kv_put(NewNodename, AppV)
-
-if bool == "true" {
-fmt.Println("done da")
-}else {
-fmt.Println("no da")
+if data != "" {
+ r := "-"
+ x := strings.LastIndex(data, r) + 1
+ Nodenumber, _ := strconv.ParseInt(data[x:], 0, 64)
+ Nodenumber++ 
+ fmt.Println(Nodenumber)
 }
-
 }

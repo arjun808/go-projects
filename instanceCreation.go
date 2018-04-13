@@ -11,6 +11,7 @@ import (
 		"io/ioutil"
 		  "strings"
 		  "strconv"
+		  "time"
 		  
        )
 
@@ -26,6 +27,61 @@ fmt.Fprintf(w,htmlStr)
 
 }
 
+type arraymap []map[string]interface{}
+
+func maint(AppVersion string) {
+fresh_tag := AppVersion
+resp, err := http.Get("http://172.31.4.66:8500/v1/kv/?recurse=true")
+if err != nil {
+   fmt.Println(err)
+}
+defer resp.Body.Close()
+body, _ := ioutil.ReadAll(resp.Body)
+  text := string(body)
+  defer resp.Body.Close()
+
+  byt := []byte(text)
+  var data arraymap
+    if err := json.Unmarshal(byt, &data); err != nil {
+        panic(err)
+    }
+    for i, _ := range data {
+        tag := data[i]["Key"].(string)
+		if tag != fresh_tag {
+     resp, err := http.Get("http://172.31.4.66:8500/v1/catalog/service/apache2?tag="+tag)
+     if err != nil {
+        fmt.Println(err)
+    }
+      body, _ := ioutil.ReadAll(resp.Body)
+	  text := string(body)
+      defer resp.Body.Close()
+
+      byt := []byte(text)
+      var data arraymap
+      var address []string
+        if err := json.Unmarshal(byt, &data); err != nil {
+            panic(err)
+        }
+        for i, _ := range data {
+            x := data[i]["Address"].(string)
+    		address = append(address, x)
+        }
+    	
+    	for item, _ := range address {
+    	addr := address[item]
+        req, err := http.NewRequest("PUT", "http://"+addr+":8500/v1/agent/service/maintenance/apache2?enable=true&reason=New+deployment+completed", nil)
+          if err != nil {
+    	fmt.Println(err)
+        }
+        resp, err := http.DefaultClient.Do(req)
+        if err != nil {
+    	  fmt.Println(err)
+       }
+       defer resp.Body.Close()
+    	}
+      }
+   }
+ }
 
 func kv_get(AppVersion string) (string) {
 var response string
@@ -113,15 +169,16 @@ AppV := r.FormValue("version")
 
 for Countint > 0 {
    Nodestringfinal := kv(Nodestring, AppV)
-   output := CreateInstance(Nodestringfinal, Imagestring)
+   output := CreateInstance(Nodestringfinal, Imagestring, AppV)
    Countint--
    fmt.Fprintf(w, output)
-   
               }
+  time.Sleep(80 * time.Second)
+  maint(AppV)
 }
 
-func CreateInstance(Nodename string, Image string) (string) {
-data := "#!/bin/bash \n ip=$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1) \n echo $ip > /tmp/ip.txt \n sed -i s/App4.3/"+ Nodename  +"/g /etc/consul.d/agent.json \n sed -i s/127.0.0.1/$ip/g /etc/consul.d/agent.json \n sed -i s/127.0.0.1/$ip/g /etc/consul.d/apache.json \n sed -i s/3/$ip/g /var/www/html/index.html \n consul agent -config-dir /etc/consul.d/"
+func CreateInstance(Nodename string, Image string, AppV string) (string) {
+data := "#!/bin/bash \n ip=$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1) \n sed -i s/enter_node_name_here/"+ Nodename  +"/g /etc/consul.d/agent.json \n sed -i s/127.0.0.1/$ip/g /etc/consul.d/agent.json \n sed -i s/127.0.0.1/$ip/g /etc/consul.d/apache.json \n sed -i s/enter_tag_here/"+ AppV +"/g /etc/consul.d/apache.json \n sed -i s/ENTER_IP_HERE/$ip/g /var/www/html/index.html \n consul agent -config-dir /etc/consul.d/"
 sEnc := b64.StdEncoding.EncodeToString([]byte(data))
 
 svc := ec2.New(session.New(&aws.Config{Region: aws.String("us-west-1")}))
@@ -168,8 +225,8 @@ var htmlStr = `
   <div>
       <form  action="/createins">
       Node Name: <input type="text" name="nodename" value="App" > <br>
-      Version: <input type="text" name="version" value="1.0" > <br>
-      Image:  <input type="text" name="image" value="ami-4f89982f" > <br>
+      Version: <input type="text" name="version" value="" > <br>
+      Image:  <input type="text" name="image" value="ami-6eeefd0e" > <br>
       Instance Count:  <input type="number" name="inscount" value="" > <br>
           <input type="submit" value="submit" />
       </form>

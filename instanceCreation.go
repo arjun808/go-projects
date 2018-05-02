@@ -233,6 +233,9 @@ func Loop(w http.ResponseWriter, r *http.Request) {
 					return
 				}
   maint(AppV)
+    if err := ws.WriteMessage(websocket.TextMessage, []byte("Deployment successful. ")); err != nil {
+					return
+				}
     if err := ws.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "")); err != nil {
 				log.Println("write close:", err)
 				return

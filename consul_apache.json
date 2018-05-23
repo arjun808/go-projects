@@ -1,0 +1,18 @@
+{
+  "service": {
+    "name": "apache2",
+    "tags": ["enter_tag_here"],
+    "address": "127.0.0.1",
+    "port": 80,
+    "enable_tag_override": false,
+    "checks": [
+      {
+         "id": "ssh",
+         "name": "Check apache2 on port 80",
+         "tcp": "localhost:80",
+         "interval": "10s",
+         "timeout": "3s"
+      }
+    ]
+  }
+}

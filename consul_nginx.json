@@ -1,0 +1,17 @@
+{
+  "service": {
+    "name": "nginx",
+    "tags": ["primary"],
+    "port": 80,
+    "enable_tag_override": false,
+    "checks": [
+      {
+         "id": "ssh",
+         "name": "Check nginx on port 80",
+         "tcp": "localhost:80",
+         "interval": "10s",
+         "timeout": "3s"
+      }
+    ]
+  }
+}

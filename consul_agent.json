@@ -1,0 +1,18 @@
+{
+"bind_addr": "127.0.0.1",
+"datacenter": "dc1",
+"ui": true,
+"data_dir": "/var/consul",
+"log_level": "INFO",
+"enable_syslog": true,
+"enable_debug": true,
+"node_name": "enter_node_name_here",
+"server": true,
+"client_addr": "0.0.0.0",
+"leave_on_terminate": false,
+"skip_leave_on_interrupt": true,
+"rejoin_after_leave": true,
+"retry_join": [
+  "172.31.1.198"
+  ]
+}

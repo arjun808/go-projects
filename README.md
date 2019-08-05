@@ -1,1 +1,1 @@
-Consul setup related files. Golang programs used with these Consul files could be used to create an autohealing setup.
+Early experiments in Golang programming. The folders contain deeper attempts at combining different tools.
